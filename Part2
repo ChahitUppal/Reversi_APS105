@@ -1,0 +1,455 @@
+/*
+ * File:        project_reversi_skeleton.c
+ * Author:      APS105H1 Teaching Team
+ * Modified by: * Chahit Uppal *
+ *
+ * Date: April 2021
+ */
+
+//#include "project_reversi_skeleton.h" // DO NOT modify this line
+#include <stdio.h>
+
+// Note: You may want to add more function declarations here
+// =========   Function declaration  ==========
+/* None for now */
+
+
+// ========= Function implementation ==========
+/*
+ * Function:  printBoard 
+ * --------------------
+ * Print the whole board to the terminal window.
+ */
+
+void setBoard(char board[][26], int n) {//set board is used to initialize the board
+    int r, c;//assigning variables to go through the row and column
+    
+    for (r = 0; r < n; r++)//going over the rows
+    {
+        for (c = 0; c < n; c++)//going over the column
+        {
+            if (c == n/2 - 1 && r == n/2 - 1)//setting W to be on the top left of the middle square
+                board[r][c] = 'W';
+            else if (c == n/2 - 1 && r == n/2)//setting W to be on the bottom left of the middle square
+                board[r][c] = 'B';
+            else if (c == n/2 && r == n/2 - 1)//setting W to be on the top right of the middle square
+                board[r][c] = 'B';
+            else if (c == n/2 && r == n/2)//setting W to be on the bottom right of the middle square
+                board[r][c] = 'W';
+            else
+                board[r][c] = 'U';//setting U everywhere else
+        }
+    }
+    
+}
+
+void printBoard(char board[][26], int n) {//used to print the board
+    int r, c, i;
+    char rowLetter = 'a', colLetter = 'a';//declaring characters that are used 
+    
+    printf("  ");
+    for (i = 0; i < n; ++i, ++rowLetter)//printing the first line of letters
+        printf("%c", rowLetter);
+    printf("\n");
+    
+    for (r = 0; r < n; ++r, ++colLetter)//going over the rows
+    {
+        printf("%c ", colLetter);//printing the first letter of the row and then moving on
+        for (c = 0; c < n; c++)
+        {
+            printf("%c", board[r][c]);//printing all the elements in one row
+        }
+    printf("\n");//next line
+    }
+}
+
+/*
+ * Function:  positionInBounds 
+ * --------------------
+ * Checks whether the specified (row, col) lies within the board dimensions.
+ */
+bool positionInBounds(int n, int row, int col) {
+    
+    int rowNum, colNum;
+    rowNum = row - 'a';//subtract the ASCII value of a to get actual row number
+    colNum = col - 'a';
+    
+    if (rowNum < n && colNum < n && rowNum >= 0 && colNum >= 0)//checking if the entered row and column is within the board
+        return true;
+    else
+        return false;
+}
+
+/*
+ * Function:  checkLegalInDirection 
+ * --------------------
+ * Checks whether (row, col) is a legal position for a tile of colour by “looking” in the direction 
+ * specified by deltaRow and deltaCol.
+ */
+bool checkLegalInDirection(char board[][26], int n, int row,
+        int col, char colour, int deltaRow, int deltaCol) {//checking validity of deltaRow and deltaCol direction
+    
+    int rowNum, colNum;
+    char tempRow = row, tempCol = col;
+    rowNum = tempRow - 'a';
+    colNum = tempCol - 'a';
+    //move the row and col in the delta directions
+    rowNum += deltaRow;
+    colNum += deltaCol;
+    tempRow += deltaRow;
+    tempCol += deltaCol;
+    
+    while (board[rowNum][colNum] != colour && board[rowNum][colNum] != 'U' && positionInBounds(n, tempRow, tempCol) == true)//same colour,empty within the board
+    {
+        //moving in the same direction
+        rowNum += deltaRow;
+        colNum += deltaCol;
+        tempRow += deltaRow;
+        tempCol += deltaCol;
+        
+        if (board[rowNum][colNum] == colour && positionInBounds(n, tempRow, tempCol) == true)//if opposite colour and within the board then OK
+        {
+            printf("%c%c\n", row, col);
+            return true;
+        }
+    }
+    return false;             
+}
+
+void boardConfiguration (char board[][26], char colour, char row, char col){//setting new pieces as per instructions
+    int rowNum, colNum;
+    //finding the actual value of row and column
+    rowNum = row - 'a';
+    colNum = col - 'a';
+    
+    if (colour == 'B')
+        board[rowNum][colNum] = 'B';
+    else if (colour == 'W')
+        board[rowNum][colNum] = 'W';
+}
+
+void checkAvailability (char board[][26], int n, char colour){//used to check for legal moves
+    int r, c, deltaRow, deltaCol;
+    char rowCheck, colCheck;
+    bool temp;//setting a temporary variable 
+    
+    for (r = 0; r < n; r++)//going over all the rows in ascending order
+    {
+        for (c = 0; c < n; c++)//going over all the columns in ascending order
+        {
+            if (board[r][c] == 'U')//checking if the index is empty space
+            {
+                temp = false;//setting the temporary variable
+                rowCheck = (char) r + 97;//defining the row 
+                colCheck = (char) c + 97;//defining the column
+                //deltaRow,deltaCol=(1,0) goes south
+                for (deltaRow = -1; deltaRow <= 1 && temp != true; ++deltaRow)
+                {
+                    for (deltaCol = -1; deltaCol <= 1 && temp != true; ++deltaCol)
+                    {
+                        if ((deltaRow == 0 && deltaCol == 0) != 1)
+                            if (checkLegalInDirection(board, n, rowCheck, colCheck, colour, deltaRow, deltaCol) == true)
+                                temp = true;//changing temp so inside loop terminates
+                    }
+                }
+            }
+        }
+    }
+}
+
+bool checkLegal(char board[][26], int n, int row,
+        int col, char colour, int deltaRow, int deltaCol) {//almost the same as checkLegalityInDirection[without printf]
+    
+    int rowNum, colNum;
+    char tempRow = row, tempCol = col;
+    rowNum = tempRow - 'a';
+    colNum = tempCol - 'a';
+    
+    rowNum += deltaRow;
+    colNum += deltaCol;
+    tempRow += deltaRow;
+    tempCol += deltaCol;
+    
+    while (board[rowNum][colNum] != colour && board[rowNum][colNum] != 'U' && positionInBounds(n, tempRow, tempCol) == true)
+    {
+        rowNum += deltaRow;
+        colNum += deltaCol;
+        tempRow += deltaRow;
+        tempCol += deltaCol;
+        
+        if (board[rowNum][colNum] == colour && positionInBounds(n, tempRow, tempCol) == true)
+        {
+            return true;
+        }
+    }
+    return false;             
+}
+
+// the function which checks if a certain move is valid or not
+bool checkValidity(char board[ ][26], int n, char row, char col, char colour)
+{
+    // checks if that spot is unfilled
+    if(board[(int)row - 97][(int) col - 97] == 'U'){
+        // if it is, then it checks to see if it is legal in any one of the 8 directions, returning true if it is legal in at least one
+        if(checkLegal(board, n, row, col, colour, -1, -1)){
+            return true;
+        } else if(checkLegal(board, n, row, col, colour, -1, 0)){
+            return true;
+        } else if(checkLegal(board, n, row, col, colour, -1, 1)){
+            return true;
+        } else if(checkLegal(board, n, row, col, colour, 0, -1)){
+            return true;
+        } else if(checkLegal(board, n, row, col, colour, 0, 1)){
+            return true;
+        } else if(checkLegal(board, n, row, col, colour, 1, -1)){
+            return true;
+        } else if(checkLegal(board, n, row, col, colour, 1, 0)){
+            return true;
+        } else if(checkLegal(board, n, row, col, colour, 1, 1)){
+            return true;
+        } else{
+            return false;
+        }
+    } else{
+        return false;
+    }
+}
+
+bool checkLegality(char board[][26], int n, char colour, char row, char col){//check if entered colour and row are legal, if so then make change
+    int deltaRow,deltaCol;
+    for (deltaRow = -1; deltaRow <= 1; deltaRow++)
+    {
+        for (deltaCol = -1; deltaCol <= 1; deltaCol++)
+        {
+            if ((deltaRow == 0 && deltaCol == 0) != 1)
+            {
+                if (checkLegal(board,n,row,col,colour, deltaRow, deltaCol) == true)
+                {
+                    board[row-'a'][col-'a'] = colour;
+                    while(1)
+                    {
+                        row += deltaRow;
+                        col += deltaCol;
+                        
+                        if (board[row-'a'][col-'a'] != colour)
+                        {
+                            board[row-'a'][col-'a'] = colour;
+                        }
+                        else 
+                            return true;
+                    } 
+                }
+            }
+        }
+    }
+    return false;
+}
+
+
+/*
+ * Function:  makeMove 
+ * --------------------
+ * The player "turn" makes a move at (row, col).
+ * Note: This function MUST NOT change board, only row and col can be changed to reflect the move.
+ */
+ //checks the score in one direction
+ 
+ bool areMovesAvailable(char board[ ][26], int n, char colour)
+{
+    // declaring local variables
+    int rowCounter, colCounter;
+    // going through the board and checking if there's at least one cell which is a valid move
+    for(rowCounter = 0; rowCounter < n; rowCounter++) {
+        for(colCounter = 0; colCounter < n; colCounter++) {
+            if(checkValidity(board, n, rowCounter + 'a', colCounter + 'a', colour)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+ 
+int scoreMoveInDirection(char board[ ][26], int n, char row, char col, char colour, int deltaRow, int deltaCol)
+{
+    // declaring local variables 
+    int rowInt = ((int) row) - 97;
+    int colInt = ((int) col) - 97;
+    int counter;
+    int score = 0;
+    char oppColour;
+    
+    // assigning colours
+    if(colour == 'W') {
+        oppColour = 'B';
+    } else if(colour == 'B') {
+        oppColour = 'W';
+    }
+    
+    // making sure that spot is unoccupied right now
+    if(board[rowInt][colInt] == 'U'){
+        // checks if the move is legal in the inputted direction; if not, it does nothing
+        if(checkLegal(board, n, row, col, colour, deltaRow, deltaCol)){
+            // if legal, a for loop goes through that direction and adds 1 to the score if it sees a tile of the opposite colour until it reaches a cell of the same colour
+            for(counter = 1; ; counter ++){
+                if(board[rowInt + deltaRow*counter][colInt + deltaCol*counter] == oppColour){
+                    score++;
+                } else if(board[rowInt + deltaRow*counter][colInt + deltaCol*counter] == colour){
+                    return score;
+                }
+            }
+        } else {
+            // if not legal, it does nothing
+            return 0;
+        }
+    }
+    return 0;
+} 
+
+//gives the total score in all directions
+int scoreMove(char board[ ][26], int n, char row, char col, char colour)
+{
+    // the score is the sum of the score in each individual direction
+    int score;
+    score = scoreMoveInDirection(board, n, row, col, colour, -1, -1) +
+    scoreMoveInDirection(board, n, row, col, colour, -1, 0) +
+    scoreMoveInDirection(board, n, row, col, colour, -1, 1) +
+    scoreMoveInDirection(board, n, row, col, colour, 0, -1) +
+    scoreMoveInDirection(board, n, row, col, colour, 0, 1) +
+    scoreMoveInDirection(board, n, row, col, colour, 1, -1) +
+    scoreMoveInDirection(board, n, row, col, colour, 1, 0) +
+    scoreMoveInDirection(board, n, row, col, colour, 1, 1);
+    return score;
+}
+
+void flipTilesInDirection(char board[ ][26], int n, char row, char col, char colour, int deltaRow, int deltaCol)
+{
+    // declaring local variables 
+    int rowInt = ((int) row) - 97;
+    int colInt = ((int) col) - 97;
+    int counter;
+    char oppColour;
+    
+    if(colour == 'W') {
+        oppColour = 'B';
+    } else if(colour == 'B') {
+        oppColour = 'W';
+    }
+    
+    // making sure that spot is unoccupied right now
+    if(board[rowInt][colInt] == 'U'){
+        // checks if the move is legal in the inputted direction; if not, it does nothing
+        if(checkLegal(board, n, row, col, colour, deltaRow, deltaCol)){
+            // if legal, a for loop goes through that direction and flips anything of the opposite colour until it reaches a cell of the same colour
+            for(counter = 1; ; counter ++){
+                if(board[rowInt + deltaRow*counter][colInt + deltaCol*counter] == oppColour){
+                    board[rowInt + deltaRow*counter][colInt + deltaCol*counter] = colour;
+                } else if(board[rowInt + deltaRow*counter][colInt + deltaCol*counter] == colour){
+                    return;
+                }
+            }
+        } else {
+            // if not legal, it does nothing
+            return;
+        }
+    }
+    return;
+}
+ 
+int makeMove(const char board[26][26], int n, char turn, int *row, int *col) {
+    // calls another function to both check if it can flip tiles in a certain direction, and then to actually flip them
+    flipTilesInDirection(board, n, row, col, turn, -1, -1);
+    flipTilesInDirection(board, n, row, col, turn, -1, 0);
+    flipTilesInDirection(board, n, row, col, turn, -1, 1);
+    flipTilesInDirection(board, n, row, col, turn, 0, -1);
+    flipTilesInDirection(board, n, row, col, turn, 0, 1);
+    flipTilesInDirection(board, n, row, col, turn, 1, -1);
+    flipTilesInDirection(board, n, row, col, turn, 1, 0);
+    flipTilesInDirection(board, n, row, col, turn, 1, 1); 
+    // declaring local variables
+    int rowCounter, colCounter, score = 0, bestRow = 0, bestCol = 0;
+    int maxScore = 0;
+    // going through the board and computing a score for each cell which is a valid move
+    for(rowCounter = 0; rowCounter < n; rowCounter++) {
+        for(colCounter = 0; colCounter < n; colCounter++) {
+            if(board[rowCounter][colCounter] == 'U' && checkValidity(board, n, rowCounter + 'a', colCounter + 'a', turn)) {
+                score = scoreMove(board, n, rowCounter + 'a', colCounter + 'a', turn);
+                // saving the index only if that position is the best scoring position so far
+                if(score > maxScore) {
+                    maxScore = score;
+                    bestRow = rowCounter;
+                    bestCol = colCounter;
+                }
+            }
+        }
+    }
+    *row=bestRow;
+    *col=bestCol;
+    return 0;
+}
+
+void makeMoveAI(char board[ ][26], int n, char colour)
+{
+    // declaring local variables
+    int rowCounter, colCounter, score = 0, bestRow = 0, bestCol = 0;
+    int maxScore = 0;
+    // going through the board and computing a score for each cell which is a valid move
+    for(rowCounter = 0; rowCounter < n; rowCounter++) {
+        for(colCounter = 0; colCounter < n; colCounter++) {
+            if(board[rowCounter][colCounter] == 'U' && checkValidity(board, n, rowCounter + 'a', colCounter + 'a', colour)) {
+                score = scoreMove(board, n, rowCounter + 'a', colCounter + 'a', colour);
+                // saving the index only if that position is the best scoring position so far
+                if(score > maxScore) {
+                    maxScore = score;
+                    bestRow = rowCounter;
+                    bestCol = colCounter;
+                }
+            }
+        }
+    }
+    // flipping the tiles in the best scoring position, and then informing the player
+    makeMove(board, n, colour, bestRow + 'a', bestCol + 'a');
+    board[bestRow][bestCol] = colour;
+    printf("Computer places %c at %c%c.\n", colour, bestRow + 'a', bestCol + 'a');
+} 
+ 
+// the function which decides who won
+void didPlayerWin(char board[ ][26], int n, char playerColour)
+{
+    // declaring local variables
+    int playerScore = 0, compScore = 0;
+    char compColour;
+    
+    // assigning colours
+    if(playerColour == 'B') {
+        compColour = 'W';
+    } else if(playerColour == 'W') {
+        compColour = 'B';
+    }
+    
+    // going through the board and adding to the score of either the player or computer based on the tile colour
+    for(int rowCounter = 0; rowCounter < n; rowCounter++) {
+        for(int colCounter = 0; colCounter < n; colCounter++) {
+            if(board[rowCounter][colCounter] == playerColour) {
+                playerScore++;
+            } else if(board[rowCounter][colCounter] == compColour) {
+                compScore++;
+            }
+        }
+    }
+    // deciding and informing the player who won
+    if(playerScore > compScore) {
+        printf("%c player wins.", playerColour);
+        return;
+    } else if(playerScore == compScore) {
+        printf("The game ended in a tie.");
+        return;
+    } else {
+        printf("%c player wins.", compColour);
+        return;
+    }
+    return;
+}
+
+#ifndef COMPETE_MODE // DO NOT DELETE THIS LINE
+
+#endif // DO NOT DELETE THIS LINE
