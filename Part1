@@ -1,0 +1,277 @@
+//#include "project_reversi_skeleton.h" // DO NOT modify this line
+#include <stdio.h>
+
+// Note: You may want to add more function declarations here
+// =========   Function declaration  ==========
+/* None for now */
+
+
+// ========= Function implementation ==========
+/*
+ * Function:  printBoard 
+ * --------------------
+ * Print the whole board to the terminal window.
+ */
+
+void printBoard(char board[][26], int n) {
+    
+    int r, c, a;
+    char rowLetter = 'a', colLetter = 'a';
+    
+    printf("  ");
+    for (a = 0; a < n; a++, rowLetter++)
+        printf("%c", rowLetter);
+    printf("\n");
+    
+    for (r = 0; r < n; r++, colLetter++)
+    {
+        printf("%c ", colLetter);
+        for (c = 0; c < n; c++)
+        {
+            if (c == n/2 - 1 && r == n/2 - 1)
+                board[r][c] = 'W';
+            else if (c == n/2 - 1 && r == n/2)
+                board[r][c] = 'B';
+            else if (c == n/2 && r == n/2 - 1)
+                board[r][c] = 'B';
+            else if (c == n/2 && r == n/2)
+                board[r][c] = 'W';
+            else
+                board[r][c] = 'U';
+            printf("%c", board[r][c]);
+        }
+    printf("\n");
+    }
+    
+}
+
+void print(char board[][26], int n) {
+    int r, c, a;
+    char rowLetter = 'a', colLetter = 'a';
+    
+    printf("  ");
+    for (a = 0; a < n; a++, rowLetter++)
+        printf("%c", rowLetter);
+    printf("\n");
+    
+    for (r = 0; r < n; r++, colLetter++)
+    {
+        printf("%c ", colLetter);
+        for (c = 0; c < n; c++)
+        {
+            printf("%c", board[r][c]);
+        }
+    printf("\n");
+    }
+}
+
+/*
+ * Function:  positionInBounds 
+ * --------------------
+ * Checks whether the specified (row, col) lies within the board dimensions.
+ */
+bool positionInBounds(int n, int row, int col) {
+    (void)n;
+    (void)row;
+    (void)col;
+    int rowNum, colNum;
+    rowNum = row - 'a';
+    colNum = col - 'a';
+    
+    if (rowNum < n && colNum < n && rowNum >= 0 && colNum >= 0)
+        return true;
+    else
+        return false;
+    return false;  
+}
+
+/*
+ * Function:  checkLegalInDirection 
+ * --------------------
+ * Checks whether (row, col) is a legal position for a tile of colour by “looking” in the direction 
+ * specified by deltaRow and deltaCol.
+ */
+bool checkLegalInDirection(char board[][26], int n, int row,
+        int col, char colour, int deltaRow, int deltaCol) {
+    
+    int rowNum, colNum;
+    char tempRow = row, tempCol = col;
+    rowNum = tempRow - 'a';
+    colNum = tempCol - 'a';
+    
+    rowNum += deltaRow;
+    colNum += deltaCol;
+    tempRow += deltaRow;
+    tempCol += deltaCol;
+    
+    while (board[rowNum][colNum] != colour && board[rowNum][colNum] != 'U' && positionInBounds(n, tempRow, tempCol) == true)
+    {
+        rowNum += deltaRow;
+        colNum += deltaCol;
+        tempRow += deltaRow;
+        tempCol += deltaCol;
+        
+        if (board[rowNum][colNum] == colour && positionInBounds(n, tempRow, tempCol) == true)
+        {
+            printf("%c%c\n", row, col);
+            return true;
+        }
+    }
+    return false;             
+}
+
+bool checkLegalInDirection2(char board[][26], int n, int row,
+        int col, char colour, int deltaRow, int deltaCol) {
+    
+    int rowNum, colNum;
+    char tempRow = row, tempCol = col;
+    rowNum = tempRow - 'a';
+    colNum = tempCol - 'a';
+    
+    rowNum += deltaRow;
+    colNum += deltaCol;
+    tempRow += deltaRow;
+    tempCol += deltaCol;
+    
+    while (board[rowNum][colNum] != colour && board[rowNum][colNum] != 'U' && positionInBounds(n, tempRow, tempCol) == true)
+    {
+        rowNum += deltaRow;
+        colNum += deltaCol;
+        tempRow += deltaRow;
+        tempCol += deltaCol;
+        
+        if (board[rowNum][colNum] == colour && positionInBounds(n, tempRow, tempCol) == true)
+        {
+            return true;
+        }
+    }
+    return false;             
+}
+
+/*
+ * Function:  makeMove 
+ * --------------------
+ * The player "turn" makes a move at (row, col).
+ * Note: This function MUST NOT change board, only row and col can be changed to reflect the move.
+ */
+int makeMove(const char board[26][26], int n, char turn, int *row, int *col) {
+    (void)board;
+    (void)n;
+    (void)turn;
+    (void)row;
+    (void)col;
+    return 0;
+}
+
+void boardConfiguration (char board[][26], char colour, char row, char col)
+{
+    int rowNum, colNum;
+    
+    rowNum = row - 'a';
+    colNum = col - 'a';
+    
+    if (colour == 'B')
+        board[rowNum][colNum] = 'B';
+    else if (colour == 'W')
+        board[rowNum][colNum] = 'W';
+}
+
+void checkAvailability (char board[][26], int n, char colour)
+{
+    int r, c, deltaRow, deltaCol;
+    char rowCheck, colCheck;
+    bool stop;//setting a temporary variable 
+    
+    for (r = 0; r < n; r++)//going over all the rows in ascending order
+    {
+        for (c = 0; c < n; c++)//going over all the columns in ascending order
+        {
+            if (board[r][c] == 'U')//checking if the index is empty space
+            {
+                stop = false;//setting the temporary variable
+                rowCheck = (char) r + 97;//defining the row 
+                colCheck = (char) c + 97;//defining the column
+                for (deltaRow = -1; deltaRow <= 1 && stop != true; deltaRow++)
+                {
+                    for (deltaCol = -1; deltaCol <= 1 && stop != true; deltaCol++)
+                    {
+                        if ((deltaRow == 0 && deltaCol == 0) != 1)
+                            if (checkLegalInDirection(board, n, rowCheck, colCheck, colour, deltaRow, deltaCol) == true)
+                                stop = true;
+                    }
+                }
+            }
+        }
+    }
+}
+
+#ifndef COMPETE_MODE // DO NOT DELETE THIS LINE
+int main(void) {
+    // Complete your main function here
+    int n,temp,deltaRow,deltaCol;
+    temp=1;
+    char colour, row, col, board[26][26];
+    printf("Enter the board dimension: ");
+    scanf("%d",&n);
+    printBoard(board,n);
+    
+    printf("Enter board configuration:\n");
+    while (temp)
+        {
+            scanf(" %c%c%c", &colour, &row, &col);
+            if (colour != '!' && row != '!' && col != '!')
+                boardConfiguration(board, colour, row, col);
+            else 
+                temp=0;
+        }
+    
+    print(board,n);
+    
+    printf("Available moves for W:\n");
+    checkAvailability (board, n, 'W');
+    printf("Available moves for B:\n");
+    checkAvailability (board, n, 'B');
+
+    printf("Enter a move:\n");
+    scanf(" %c%c%c", &colour, &row, &col);
+    
+    //checking if the move is valid or not
+    temp=0;
+    for (deltaRow = -1; deltaRow <= 1; deltaRow++)
+    {
+        for (deltaCol = -1; deltaCol <= 1; deltaCol++)
+        {
+            if ((deltaRow == 0 && deltaCol == 0) != 1)
+            {
+                if (checkLegalInDirection2(board,n,row,col,colour, deltaRow, deltaCol) == true)
+                {
+                    temp = 1;
+                    board[row-'a'][col-'a'] = colour;
+                    while(1)
+                    {
+                        row += deltaRow;
+                        col += deltaCol;
+                        
+                        if (board[row-'a'][col-'a'] != colour)
+                        {
+                            board[row-'a'][col-'a'] = colour;
+                        }
+                        else 
+                            break;
+                    } 
+                }
+            }
+        }
+    }               
+    
+    if(temp==1){
+        printf("Valid move.\n");
+    }
+    else{
+        printf("Invalid move.\n");
+    }
+                    
+    print(board,n);
+    return 0;
+}
+#endif // DO NOT DELETE THIS LINE
